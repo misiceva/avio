@@ -33,7 +33,6 @@ export class Flight {
   @OneToMany(() => Reservation, r => r.flight)
   reservations: Reservation[]
 
-
   @ManyToOne(() => Airplane, { eager: true })
   airplane: Airplane;
 }

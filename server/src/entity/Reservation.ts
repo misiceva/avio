@@ -14,9 +14,9 @@ export class Reservation {
   @Column()
   price: number;
 
-  @ManyToOne(() => Flight)
+  @ManyToOne(() => Flight, f => f.reservations, { onDelete: 'CASCADE' })
   flight: Flight;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, u => u.reservations, { onDelete: 'CASCADE' })
   user: User;
 }
