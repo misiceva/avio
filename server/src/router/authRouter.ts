@@ -9,7 +9,7 @@ router.post('/login', async (req, res) => {
   const userRepository = getRepository(User);
   const user = await userRepository.findOne({
     where: {
-      username: req.body.username,
+      email: req.body.email,
       password: req.body.password
     }
   });
@@ -30,30 +30,22 @@ router.post('/login', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   const userRepository = getRepository(User);
-  let user = await userRepository.findOne({
-    where: {
-      username: req.body.username
-    }
-  });
-  if (user) {
-    res.status(400).json({
-      error: 'User already exists'
+
+  try {
+    const user = await userRepository.save({
+      ...req.body,
+      category: 'user'
     });
-    return;
+    (req.session as any).user = user;
+    req.session.save(e => {
+      if (e) {
+        console.log(e);
+      }
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(400).send('User already exists');
   }
-  const insertResult = await userRepository.insert({
-    ...req.body,
-    category: 'user'
-  });
-  const id = insertResult.identifiers[0].id;
-  user = await userRepository.findOne(id);
-  (req.session as any).user = user;
-  req.session.save(e => {
-    if (e) {
-      console.log(e);
-    }
-  });
-  res.json(user);
 })
 
 export default router;
