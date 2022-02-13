@@ -1,25 +1,44 @@
-import React, { useState } from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
 import './App.css';
-import { User } from './types';
+import { SERVER, User } from './types';
 import GuestApp from './guest/GuestApp';
 import ClientApp from './client/ClientApp';
 import AdminApp from './admin/AdminApp';
-
+import axios from 'axios';
+axios.defaults.withCredentials = true;
 function App() {
-  const [user, setUser] = useState<User | undefined>(undefined)
+  const [user, setUser] = useState<User | undefined>(undefined);
+  const [loading, setLoading] = useState(true)
+
+  const logout = async () => {
+    await axios.post(SERVER + '/user/logout');
+    setUser(undefined);
+  }
+
+  useEffect(() => {
+    axios.post(SERVER + '/user/check').then(res => {
+      setUser(res.data)
+    }).finally(() => {
+      setLoading(false);
+    })
+  }, [])
+
+  if (loading) {
+    return null;
+  }
+
   if (!user) {
     return (
-      <GuestApp />
+      <GuestApp setUser={setUser} />
     )
   }
   if (user.admin) {
     return (
-      <AdminApp />
+      <AdminApp onLogout={logout} />
     )
   }
   return (
-    <ClientApp />
+    <ClientApp onLogout={logout} />
   )
 }
 

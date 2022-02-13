@@ -36,3 +36,35 @@
     transform: rotate(360deg);
   }
 }
+.text-center {
+  text-align: center;
+}
+
+.active-row > div > div {
+  background-color: aquamarine;
+}
+.active-row {
+  background-color: aquamarine;
+}
+.danger {
+  background-color: red;
+  color: white;
+}
+.padded {
+  padding: 20px 50px;
+}
+.fluid {
+  width: 100%;
+}
+
+.fluid > * {
+  width: 100%;
+}
+.space-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.paddedBottom {
+  padding-bottom: 20px;
+}

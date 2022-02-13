@@ -8,6 +8,7 @@ import * as https from 'https';
 import authRouter from './router/authRouter'
 import userRouter from './router/userRouter'
 import adminRouter from './router/adminRouter'
+import axios from 'axios'
 createConnection().then(async connection => {
     const key = fs.readFileSync('./key.pem', 'utf8');
     const cert = fs.readFileSync('./cert.pem', 'utf8');
@@ -30,7 +31,11 @@ createConnection().then(async connection => {
             secure: true
         }
     }))
-
+    app.get('/image', async (req, res) => {
+        const result = await axios.get('https://imsea.herokuapp.com/api/1?q=airport', { withCredentials: false });
+        const url = result.data.results[Math.floor(Math.random() * result.data.results.length)];
+        return res.json({ url });
+    })
     app.use('/auth', authRouter)
     app.use((request, response, next) => {
         const user = (request.session as any).user;

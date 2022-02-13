@@ -27,46 +27,38 @@ router.get('/airports', async (req, res) => {
   res.json(airports);
 })
 router.get('/flights', async (req, res) => {
-  const from = (req.query as any).from as number | undefined;
-  const to = (req.query as any).from as number | undefined;
-  const startId = (req.query as any).start as number | undefined;
-  const destinationId = (req.query as any).destination as number | undefined;
+  const from = (req.query as any).from as string | undefined;
+  const to = (req.query as any).to as string | undefined;
+  const startId = (req.query as any).startId as string | undefined;
+  const destinationId = (req.query as any).destinationId as string | undefined;
   let size = (req.query as any).size || 20;
   let page = (req.query as any).page || 0;
-  let where = {} as FindCondition<Flight>
-
-  if (startId != undefined) {
-    where = {
-      start: {
-        id: startId
-      }
+  let where = {} as any;
+  if (startId) {
+    //@ts-ignore
+    where.start = {
+      id: Number(startId)
     }
   }
-  if (destinationId != undefined) {
-    where = {
-      ...where,
-      destination: {
-        id: destinationId
-      }
+  if (destinationId) {
+    //@ts-ignore
+    where.destination = {
+      id: Number(destinationId)
     }
+
   }
   if (from && to) {
-    where = {
-      ...where,
-      startTime: Between(new Date(from), new Date(to))
-    }
+    //@ts-ignore
+    where.startTime = Between(new Date(from), new Date(to))
   } else {
     if (from) {
-      where = {
-        ...where,
-        startTime: MoreThanOrEqual(new Date(from))
-      }
+      //@ts-ignore
+      where.startTime = MoreThanOrEqual(new Date(from))
+
     } else {
       if (to) {
-        where = {
-          ...where,
-          startTime: LessThanOrEqual(new Date(to))
-        }
+        //@ts-ignore
+        where.startTime = LessThanOrEqual(new Date(to))
       }
     }
   }
@@ -109,7 +101,7 @@ router.get('/flights/:id', async (req, res) => {
 })
 router.post('/flights/:id', async (req, res) => {
   const flight = await getRepository(Flight).findOne({
-    relations: ['reservation'],
+    relations: ['reservations'],
     where: {
       id: req.params.id
     }
@@ -122,20 +114,19 @@ router.post('/flights/:id', async (req, res) => {
     res.status(400).json({ error: 'Flight is full' });
     return;
   }
-  if (new Date(flight.startTime).getTime() > Date.now()) {
+  if (new Date(flight.startTime).getTime() <= Date.now()) {
     res.status(400).json({ error: 'Flight has already started' });
     return;
   }
-  const seatCategoryName = req.body.seatCategory as string;
-  const seatCategory = flight.seatCategories.find(e => e.name === seatCategoryName);
-  if (!seatCategory) {
+  let seatCategoryName = req.body.seatCategory as string;
+  if (!seatCategoryName || !flight.seatCategories[seatCategoryName]) {
     res.status(400).json({ error: 'Invalid seat category' })
   }
   const user = (req.session as any).user as User;
   const reservation = await getRepository(Reservation).save({
     flight,
-    price: seatCategory.price,
-    seatCategory: seatCategory.name,
+    price: flight.seatCategories[seatCategoryName],
+    seatCategory: seatCategoryName,
     user: {
       id: user.id
     }
@@ -145,6 +136,7 @@ router.post('/flights/:id', async (req, res) => {
 router.get('/reservations', async (req, res) => {
   const user = (req.session as any).user as User;
   const reservations = await getRepository(Reservation).find({
+    relations: ['flight'],
     where: {
       user: {
         id: user.id
@@ -152,5 +144,10 @@ router.get('/reservations', async (req, res) => {
     }
   });
   res.json(reservations);
+})
+router.delete('/reservations/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  await getRepository(Reservation).delete(id);
+  res.sendStatus(204);
 })
 export default router;

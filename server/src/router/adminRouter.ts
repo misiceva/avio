@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { getRepository } from "typeorm";
 import { Airplane } from "../entity/Airplane";
-import { Flight, SeatCategory } from "../entity/Flight";
+import { Flight, SeatCategories } from "../entity/Flight";
 
 interface WriteAirplaneDto {
   model: string,
@@ -13,7 +13,7 @@ interface WriteFlightDto {
   duration: number,
   startId: number,
   destinationId: number,
-  seatCategories: SeatCategory[],
+  seatCategories: SeatCategories,
   airplaneId: number
 }
 

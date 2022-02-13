@@ -28,7 +28,7 @@ export class Flight {
     },
     type: 'json'
   })
-  seatCategories: SeatCategory[];
+  seatCategories: SeatCategories;
 
   @OneToMany(() => Reservation, r => r.flight)
   reservations: Reservation[]
@@ -37,7 +37,6 @@ export class Flight {
   airplane: Airplane;
 }
 
-export interface SeatCategory {
-  price: number,
-  name: string;
+export interface SeatCategories {
+  [key: string]: number
 }
